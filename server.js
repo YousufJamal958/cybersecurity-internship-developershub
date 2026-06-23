@@ -1,6 +1,7 @@
 "use strict";
 
 const express = require("express");
+var helmet = require("helmet");
 const favicon = require("serve-favicon");
 const bodyParser = require("body-parser");
 const session = require("express-session");
@@ -65,6 +66,7 @@ MongoClient.connect(db, (err, db) => {
     */
 
     // Adding/ remove HTTP Headers for security
+    app.use(helmet());
     app.use(favicon(__dirname + "/app/assets/favicon.ico"));
 
     // Express middleware to populate "req.body" so we can access POST variables

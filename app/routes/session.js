@@ -1,4 +1,7 @@
 const UserDAO = require("../data/user-dao").UserDAO;
+const logger = require("../logger");
+const jwt = require("jsonwebtoken");
+const validator = require("validator");
 const AllocationsDAO = require("../data/allocations-dao").AllocationsDAO;
 const {
     environmentalScripts
@@ -62,6 +65,7 @@ function SessionHandler(db) {
             if (err) {
                 if (err.noSuchUser) {
                     console.log("Error: attempt to login with invalid user: ", userName);
+                    logger.warn(`Failed login attempt for username: ${userName}`);
 
                     // Fix for A1 - 3 Log Injection - encode/sanitize input for CRLF Injection
                     // that could result in log forging:
@@ -113,8 +117,23 @@ function SessionHandler(db) {
             // by wrapping the below code as a function callback for the method req.session.regenerate()
             // i.e:
             // `req.session.regenerate(() => {})`
-            req.session.userId = user._id;
-            return res.redirect(user.isAdmin ? "/benefits" : "/dashboard");
+            // Fix for A2 - Broken Authentication
+// Regenerate session on login to prevent session fixation
+req.session.regenerate(() => {
+    req.session.userId = user._id;
+    logger.info(`User logged in successfully: ${user.userName}`);
+    // Generate JWT token for the user
+    const token = jwt.sign(
+        { id: user._id, userName: user.userName },
+        "nodegoat_jwt_secret",
+        { expiresIn: "1h" }
+    );
+
+    // Store token in session
+    req.session.token = token;
+
+    return res.redirect(user.isAdmin ? "/benefits" : "/dashboard");
+});
         });
     };
 
@@ -141,12 +160,8 @@ function SessionHandler(db) {
         const FNAME_RE = /^.{1,100}$/;
         const LNAME_RE = /^.{1,100}$/;
         const EMAIL_RE = /^[\S]+@[\S]+\.[\S]+$/;
-        const PASS_RE = /^.{1,20}$/;
-        /*
-        //Fix for A2-2 - Broken Authentication -  requires stronger password
-        //(at least 8 characters with numbers and both lowercase and uppercase letters.)
         const PASS_RE =/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-        */
+       
 
         errors.userNameError = "";
         errors.firstNameError = "";
@@ -178,7 +193,7 @@ function SessionHandler(db) {
             return false;
         }
         if (email !== "") {
-            if (!EMAIL_RE.test(email)) {
+            if (!EMAIL_RE.test(email) || !validator.isEmail(email)) {
                 errors.emailError = "Invalid email address";
                 return false;
             }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # NodeGoat
 
 Being lightweight, fast, and scalable, Node.js is becoming a widely adopted platform for developing web applications. This project provides an environment to learn how OWASP Top 10 security risks apply to web applications developed using Node.js and how to effectively address them.
@@ -160,3 +161,6 @@ Here are the amazing [contributors](https://github.com/OWASP/NodeGoat/graphs/con
 ## License
 
 Code licensed under the [Apache License v2.0.](http://www.apache.org/licenses/LICENSE-2.0)
+=======
+# cybersecurity-internship-developershub
+>>>>>>> cdf9e581d65c44a032c5faf160599e337023c406

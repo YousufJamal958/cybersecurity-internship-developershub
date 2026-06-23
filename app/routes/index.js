@@ -1,4 +1,5 @@
 const SessionHandler = require("./session");
+const validator = require("validator");
 const ProfileHandler = require("./profile");
 const BenefitsHandler = require("./benefits");
 const ContributionsHandler = require("./contributions");
